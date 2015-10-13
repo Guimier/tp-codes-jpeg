@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstdlib>
 
+#define cimg_verbosity 3
 #include "CImg.h"
 
 #define ROUND( a ) ( ( (a) < 0 ) ? (int) ( (a) - 0.5 ) : (int) ( (a) + 0.5 ) )
@@ -13,60 +14,65 @@
 using namespace std;
 using namespace cimg_library;
 
-double ComputeFullPrecisionDctPoint( const CImg<unsigned char> bloc, int i, int j ) {
-	#define C(i) ((i)?1:1/sqrt(2))
+double ComputeFullPrecisionDctPoint( const CImg<signed char> bloc, int i, int j ) {
+	#define C(i) ((i)?1:(1/sqrt(2)))
 	
 	double sum = 0;
 	
+	// cout << "----------------" << endl;
+	
 	for ( int x = 0; x < BLOC_SIZE; ++x ) {
-		for ( y = 0; y < BLOC_SIZE; ++y ) {
+		for ( int y = 0; y < BLOC_SIZE; ++y ) {
 			sum += bloc( x, y )
-				* cos( ( 2 * x + 1 ) * i * PI / 2. / N )
-				* cos( ( 2 * y + 1 ) * j * PI / 2. / N );
+				* cos( ( 2 * x + 1 ) * i * cimg::PI / 2. / BLOC_SIZE )
+				* cos( ( 2 * y + 1 ) * j * cimg::PI / 2. / BLOC_SIZE );
 		}
 	}
 	
-	return 2. / N * C( i ) * C( j );
+	return sum * 2 / BLOC_SIZE * C( i ) * C( j );
 	
 	#undef C
 }
 
-void ComputeFullPrecisionDctBloc( CImg<unsigned char> bloc, CImg<double>& cbloc ) {
+void ComputeFullPrecisionDctBloc( CImg<unsigned char> bloc, CImg<signed char>& shifted, CImg<double>& cbloc ) {
 	for ( int x = 0; x < BLOC_SIZE; ++x ) {
-		for ( y = 0; y < BLOC_SIZE; ++y ) {
-			bloc( x, y ) = bloc( x, y ) - 128;
+		for ( int y = 0; y < BLOC_SIZE; ++y ) {
+			shifted( x, y ) = bloc( x, y ) - 128;
 		}
 	}
 
 	for ( int i = 0; i < BLOC_SIZE; ++i ) {
 		for ( int j = 0; j < BLOC_SIZE; ++j ) {
-			cbloc( i, j ) = ComputeFullPrecisionDctPoint( bloc, i, j );
+			cbloc( i, j ) = ComputeFullPrecisionDctPoint( shifted, i, j );
 		}
 	}
 }
 
-CImg<unsigned char> JPEGEncoder( const CImg<unsigned char> image, const float quality ) {
-	CImg<double> fullPrecision(BLOC_SIZE, BLOC_SIZE, 1, 1, 0 );
+CImg<unsigned char> JPEGEncoder( const CImg<unsigned char> image, const float q ) {
+	CImg<double> fullPrecision( BLOC_SIZE, BLOC_SIZE, 1, 1, 0 );
+	CImg<signed char> shifted( BLOC_SIZE, BLOC_SIZE, 1, 1, 0 );
 	CImg<unsigned char> comp( image.width(), image.height(), 1, 1, 0 );
 	comp = image;
 
-	// Quantization matrix
-	/*
-	CImg<> Q(8,8);
-	Q(0,0)=16;   Q(0,1)=11;   Q(0,2)=10;   Q(0,3)=16;   Q(0,4)=24;   Q(0,5)=40;   Q(0,6)=51;   Q(0,7)=61;
-	Q(1,0)=12;   Q(1,1)=12;   Q(1,2)=14;   Q(1,3)=19;   Q(1,4)=26;   Q(1,5)=58;   Q(1,6)=60;   Q(1,7)=55;
-	Q(2,0)=14;   Q(2,1)=13;   Q(2,2)=16;   Q(2,3)=24;   Q(2,4)=40;   Q(2,5)=57;   Q(2,6)=69;   Q(2,7)=56;
-	Q(3,0)=14;   Q(3,1)=17;   Q(3,2)=22;   Q(3,3)=29;   Q(3,4)=51;   Q(3,5)=87;   Q(3,6)=80;   Q(3,7)=62;
-	Q(4,0)=18;   Q(4,1)=22;   Q(4,2)=37;   Q(4,3)=56;   Q(4,4)=68;   Q(4,5)=109;  Q(4,6)=103;  Q(4,7)=77;
-	Q(5,0)=24;   Q(5,1)=35;   Q(5,2)=55;   Q(5,3)=64;   Q(5,4)=81;   Q(5,5)=104;  Q(5,6)=113;  Q(5,7)=92;
-	Q(6,0)=49;   Q(6,1)=64;   Q(6,2)=78;   Q(6,3)=87;   Q(6,4)=103;  Q(6,5)=121;  Q(6,6)=120;  Q(6,7)=101;
-	Q(7,0)=72;   Q(7,1)=92;   Q(7,2)=95;   Q(7,3)=98;   Q(7,4)=112;  Q(7,5)=100;  Q(7,6)=103;  Q(7,7)=99;
-	Q *= quality; 
-	*/
+	CImg<double> Q( 8, 8 );
+	Q(0,0)=q*16;   Q(0,1)=q*11;   Q(0,2)=q*10;   Q(0,3)=q*16;   Q(0,4)=q*24;   Q(0,5)=q*40;   Q(0,6)=q*51;   Q(0,7)=q*61;
+	Q(1,0)=q*12;   Q(1,1)=q*12;   Q(1,2)=q*14;   Q(1,3)=q*19;   Q(1,4)=q*26;   Q(1,5)=q*58;   Q(1,6)=q*60;   Q(1,7)=q*55;
+	Q(2,0)=q*14;   Q(2,1)=q*13;   Q(2,2)=q*16;   Q(2,3)=q*24;   Q(2,4)=q*40;   Q(2,5)=q*57;   Q(2,6)=q*69;   Q(2,7)=q*56;
+	Q(3,0)=q*14;   Q(3,1)=q*17;   Q(3,2)=q*22;   Q(3,3)=q*29;   Q(3,4)=q*51;   Q(3,5)=q*87;   Q(3,6)=q*80;   Q(3,7)=q*62;
+	Q(4,0)=q*18;   Q(4,1)=q*22;   Q(4,2)=q*37;   Q(4,3)=q*56;   Q(4,4)=q*68;   Q(4,5)=q*109;  Q(4,6)=q*103;  Q(4,7)=q*77;
+	Q(5,0)=q*24;   Q(5,1)=q*35;   Q(5,2)=q*55;   Q(5,3)=q*64;   Q(5,4)=q*81;   Q(5,5)=q*104;  Q(5,6)=q*113;  Q(5,7)=q*92;
+	Q(6,0)=q*49;   Q(6,1)=q*64;   Q(6,2)=q*78;   Q(6,3)=q*87;   Q(6,4)=q*103;  Q(6,5)=q*121;  Q(6,6)=q*120;  Q(6,7)=q*101;
+	Q(7,0)=q*72;   Q(7,1)=q*92;   Q(7,2)=q*95;   Q(7,3)=q*98;   Q(7,4)=q*112;  Q(7,5)=q*100;  Q(7,6)=q*103;  Q(7,7)=q*99;
 
-	for ( int i = 0; i < image.width(); i += 8 ) {
-		for ( int j = 0; i < image.height(); j += 8 ) {
+	for ( int i = 0; i < image.width(); i += BLOC_SIZE ) {
+		for ( int j = 0; j < image.height(); j += BLOC_SIZE ) {
+			ComputeFullPrecisionDctBloc( image.get_crop( i, j, i + BLOC_SIZE, j + BLOC_SIZE ), shifted, fullPrecision );
 			
+			for ( int x = 0; x < BLOC_SIZE; ++x ) {
+				for ( int y = 0; y < BLOC_SIZE; ++y ) {
+					comp( i + x, j + y ) = ROUND( fullPrecision( x, y ) / Q( x, y ) );
+				}
+			}
 		}
 	}
 
