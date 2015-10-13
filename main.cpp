@@ -6,7 +6,7 @@
 #include <cstdlib>
 
 #define cimg_verbosity 3
-#include "CImg.h"
+#include "cimg/CImg.h"
 
 #define ROUND( a ) ( ( (a) < 0 ) ? (int) ( (a) - 0.5 ) : (int) ( (a) + 0.5 ) )
 #define BLOC_SIZE 8
