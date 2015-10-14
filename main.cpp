@@ -5,7 +5,8 @@
 #include <iostream>
 #include <cstdlib>
 
-#define cimg_verbosity 3
+// Décommenter pour avoir un diagnostic des erreurs…
+// #define cimg_verbosity 3
 #include "cimg/CImg.h"
 
 #define ROUND( a ) ( ( (a) < 0 ) ? (int) ( (a) - 0.5 ) : (int) ( (a) + 0.5 ) )
