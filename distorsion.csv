@@ -1,3 +1,4 @@
+q,D,Remarques
 1,16.7267,Peu de pertes
 2,27.2659,Pertes devenant visibles
 3,38.158,Clairement visible
@@ -19,7 +20,12 @@
 40,796.391,Trois niveaux de gris ; peu de restes de fréquences ≥ 1
 50,1068.84,Idem ; une cinquantaine de blocs non homogènes
 60,1478.96,Idem ; trentaine
+63,1664.54
+64,4747.24
+65,9639.34
+68,8255.46
 70,7451.04,Gris ; blanc ; noir ; vingtaine
+75,5617.58
 80,3689.95,Majorité de gris
 90,2385.15,
 100,2307.15,Un bloc non gris
