@@ -149,6 +149,20 @@ CImg <unsigned char> JPEGDecoder( const CImg<signed char>& compressedImage, cons
 	return decompressImage;
 }
 
+/***** Évaluation *****/
+
+double Distorsion( const CImg<unsigned char>& img1, const CImg<unsigned char>& img2 ) {
+	double sum = 0;
+	
+	for ( int x = 0; x < img1.width(); ++x ) {
+		for ( int y = 0; y < img1.height(); ++y ) {
+			sum += pow( img1( x, y ) - img2( x, y ), 2 );
+		}
+	}
+	
+	return sum / img1.width() / img1.height();
+}
+
 /***** Exécution *****/
 
 void WaitWindow( CImgDisplay& win ) {
@@ -165,19 +179,21 @@ int main()
 	// Take the luminance information 
 	my_image.channel(0);
 
-	float quality = 5;
+	float quality = 1;
 	CImg<unsigned char> comp_image = JPEGEncoder( my_image, quality );
 	CImg<unsigned char> decomp_image = JPEGDecoder(comp_image,quality);
+	
+	cout << "Taux de distorsion : " << Distorsion( my_image, decomp_image ) << endl;
 
 	// Display the bmp file
 	CImgDisplay main_disp( my_image, "Initial Image" );
 
 	// Display the compressed file (by dct)
-	CImgDisplay comp_disp( comp_image, "Compressed Image" );
+	//CImgDisplay comp_disp( comp_image, "Compressed Image" );
 	CImgDisplay decomp_disp( decomp_image, "Decompressed Image" );
 
 	WaitWindow( main_disp );
-	WaitWindow( comp_disp );
+	//WaitWindow( comp_disp );
 	WaitWindow( decomp_disp );
 }
 

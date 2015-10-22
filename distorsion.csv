@@ -1,0 +1,26 @@
+1,16.7267,Peu de pertes
+2,27.2659,Pertes devenant visibles
+3,38.158,Clairement visible
+4,48.7578,Devient désagréable ; fond pixelisé
+5,61.0897,
+6,74.3922,De pire en pire
+7,87.1829,
+8,102.822,
+9,121.572,Bordures front/chapeau et menton/épaule disparaissent
+10,133.607,Cheveux unis
+12,163.666,
+14,205.012,
+16,254.147,Plus que des bordures ; niveaux de gris très pixelisés pour le reste
+18,270.736,Bloc de fréquence < 2
+20,314.894,
+25,477.008,
+30,558.902,Quatre niveaux de gris hors bordures
+35,773.622,Trois niveaux de gris hors bordures
+40,796.391,Trois niveaux de gris ; peu de restes de fréquences ≥ 1
+50,1068.84,Idem ; une cinquantaine de blocs non homogènes
+60,1478.96,Idem ; trentaine
+70,7451.04,Gris ; blanc ; noir ; vingtaine
+80,3689.95,Majorité de gris
+90,2385.15,
+100,2307.15,Un bloc non gris
+110,2305.57,Tout gris
