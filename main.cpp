@@ -57,22 +57,24 @@ double ComputeFullPrecisionDctPoint( const CImg<signed char>& bloc, int i, int j
 }
 
 void ComputeFullPrecisionDctBloc( CImg<unsigned char> bloc, CImg<double>& cbloc ) {
+	CImg<signed char> centered( BLOC_SIZE, BLOC_SIZE, 1, 1, 0 );
+	
 	for ( int x = 0; x < BLOC_SIZE; ++x ) {
 		for ( int y = 0; y < BLOC_SIZE; ++y ) {
-			bloc( x, y ) = bloc( x, y ) - 128;
+			centered( x, y ) = bloc( x, y ) - 128;
 		}
 	}
 
 	for ( int i = 0; i < BLOC_SIZE; ++i ) {
 		for ( int j = 0; j < BLOC_SIZE; ++j ) {
-			cbloc( i, j ) = ComputeFullPrecisionDctPoint( bloc, i, j );
+			cbloc( i, j ) = ComputeFullPrecisionDctPoint( centered, i, j );
 		}
 	}
 }
 
-CImg<unsigned char> JPEGEncoder( const CImg<unsigned char>& image, const float q ) {
+CImg<signed char> JPEGEncoder( const CImg<unsigned char>& image, const float q ) {
 	CImg<double> fullPrecision( BLOC_SIZE, BLOC_SIZE, 1, 1, 0 );
-	CImg<unsigned char> comp( image.width(), image.height(), 1, 1, 0 );
+	CImg<signed char> comp( image.width(), image.height(), 1, 1, 0 );
 	comp = image;
 
 	CImg<double> Q = QuantizationMatrix( q );
@@ -97,6 +99,8 @@ CImg<unsigned char> JPEGEncoder( const CImg<unsigned char>& image, const float q
 double ComputeInverseDctPoint( const CImg<double>& cbloc, int x, int y ) {
 	double sum = 0;
 	
+	
+	
 	for ( int i = 0; i < BLOC_SIZE; ++i ) {
 		for ( int j = 0; j < BLOC_SIZE; ++j ) {
 			sum += cbloc( i, j )
@@ -118,7 +122,7 @@ void ComputeInverseDctBloc( const CImg<double>& cbloc, CImg<unsigned char>& bloc
 	}
 }
 
-CImg <unsigned char> JPEGDecoder( const CImg<unsigned char>& compressedImage, const float q ) {
+CImg <unsigned char> JPEGDecoder( const CImg<signed char>& compressedImage, const float q ) {
 	CImg<unsigned char> decompressImage(compressedImage.width(),compressedImage.height(),1,1,0);
 	CImg<double> dctBloc( BLOC_SIZE, BLOC_SIZE, 1, 1, 0 );
 	CImg<unsigned char> realBloc( BLOC_SIZE, BLOC_SIZE, 1, 1, 0 );
@@ -145,6 +149,14 @@ CImg <unsigned char> JPEGDecoder( const CImg<unsigned char>& compressedImage, co
 	return decompressImage;
 }
 
+/***** Exécution *****/
+
+void WaitWindow( CImgDisplay& win ) {
+	while ( ! win.is_closed() ) {
+		win.wait();
+	}
+}
+
 int main()
 {
 	// Read the image "lena.bmp"
@@ -153,7 +165,7 @@ int main()
 	// Take the luminance information 
 	my_image.channel(0);
 
-	float quality = 1;
+	float quality = 5;
 	CImg<unsigned char> comp_image = JPEGEncoder( my_image, quality );
 	CImg<unsigned char> decomp_image = JPEGDecoder(comp_image,quality);
 
@@ -164,12 +176,8 @@ int main()
 	CImgDisplay comp_disp( comp_image, "Compressed Image" );
 	CImgDisplay decomp_disp( decomp_image, "Decompressed Image" );
 
-	while ( ! main_disp.is_closed() ) {
-		main_disp.wait();
-	}
-
-	while ( ! comp_disp.is_closed() ) {
-		main_disp.wait();
-	}
+	WaitWindow( main_disp );
+	WaitWindow( comp_disp );
+	WaitWindow( decomp_disp );
 }
 
